@@ -5,14 +5,15 @@ class LocationUrls {
   final String locations = 'locations';
   final dio = Dio(
     BaseOptions(
-      connectTimeout: Duration(milliseconds: 3000),
-      receiveTimeout: Duration(milliseconds: 3000),
+      connectTimeout: Duration(milliseconds: 7000),
+      receiveTimeout: Duration(milliseconds: 7000),
     ),
   );
   final base = Base();
 
   late String baseUrl;
   late List<dynamic> locationDetailList;
+  List? locationListDetail;
   String? locationKey, locationName, countryName, stateName;
 
   LocationUrls() {
@@ -35,11 +36,11 @@ class LocationUrls {
       // unpacking the map list
       for (var location in locationDetailList) {
         print(
-          'Location: ${location['LocalizedName']} \tKey: ${location['Key']}\n\tCountry: ${location['Country']['LocalizedName']} \tState: ${location['AdministrativeArea']['LocalizedName']}',
+          'Location: ${location['LocalizedName']} \tKey: ${location['Key']}\n\tCountry: ${location['Country']['LocalizedName']} \tState: ${location['AdministrativeArea']['LocalizedName']} \n',
         );
       }
 
-      return (locationDetailList);
+      return locationDetailList;
     } catch (e) {
       print('Error fetching locations: $e');
       return null;

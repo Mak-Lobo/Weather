@@ -7,18 +7,27 @@ class Locations extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Locations'), centerTitle: true),
         body: CustomScrollView(
           slivers: [
+            SliverAppBar(
+              floating: true,
+              snap: true,
+              title: const Text('Locations'),
+              centerTitle: true,
+              pinned: true,
+            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.25, green: 0.2),
+                    fillColor: Theme.of(context).colorScheme.primary.withValues(
+                      alpha: 0.7,
+                      green: 0.5,
+                      blue: 0.75,
+                      red: 0.1,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       borderSide: BorderSide(

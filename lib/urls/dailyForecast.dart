@@ -1,8 +1,7 @@
 import './../urls/base.dart';
 import 'package:dio/dio.dart';
 
-class Forecasts {
-  final String forecasts = 'forecasts';
+class DailyForecast {
   final dio = Dio(
     BaseOptions(
       connectTimeout: Duration(milliseconds: 3000),
@@ -11,10 +10,11 @@ class Forecasts {
   );
 
   final base = Base();
-  late Map<String, dynamic> forecastDailyMap, forecastHourlyMap;
+  late Map<String, dynamic> forecastDailyMap;
+  late Map<String, dynamic> dailyData;
   late String baseUrl;
 
-  Forecasts() {
+  DailyForecast() {
     base.baseInit();
     baseUrl = base.apiBaseUrl;
   }
@@ -23,7 +23,7 @@ class Forecasts {
   Future getDailyForecast() async {
     try {
       final response = await dio.get(
-        '$baseUrl/$forecasts/v1/daily/5day/222997',
+        '$baseUrl/forecasts/v1/daily/5day/222997',
         queryParameters: {'apikey': base.apiKey, 'metric': 'true'},
       );
 
@@ -58,5 +58,29 @@ class Forecasts {
       print('Error fetching daily forecast: $e');
       return null;
     }
+  }
+
+  Future getDailyForecastData() async {
+    try {
+      await getDailyForecast();
+    } catch (e) {
+      print('Error fetching daily forecast data: $e');
+      return null;
+    }
+
+    for (var forecast in forecastDailyMap['DailyForecasts']) {
+      dailyData = {
+        'date': DateTime.fromMillisecondsSinceEpoch(
+          forecast['EpochDate'] * 1000,
+        ),
+        'max_temperature': forecast['Temperature']['Maximum']['Value'],
+        'min_temperature': forecast['Temperature']['Minimum']['Value'],
+        'dayIconPhrase': forecast['Day']['IconPhrase'],
+        'nightIconPhrase': forecast['Night']['IconPhrase'],
+        'dayIcon': forecast['Day']['Icon'],
+        'nightIcon': forecast['Night']['Icon'],
+      };
+    }
+    return dailyData;
   }
 }

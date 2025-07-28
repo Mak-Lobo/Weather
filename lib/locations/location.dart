@@ -6,6 +6,7 @@ class DeviceLocation {
   bool? _serviceEnabled;
   PermissionStatus? _permissionGranted;
   LocationData? _locationData;
+  Map<String, dynamic> geocodeData = {};
 
   // check if the location service is enabled
   Future<bool> checkLocationService() async {
@@ -34,14 +35,19 @@ class DeviceLocation {
   }
 
   // getting the current location
-  Future<LocationData> getLocation() async {
+  Future<Map<String, dynamic>> getLocation() async {
     await location.changeSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 0,
       interval: 500,
     );
     _locationData = await location.getLocation();
-    print('Location: ${_locationData!.latitude}, ${_locationData!.longitude}');
-    return _locationData!; // print the location _locationData!;
+    geocodeData = {
+      'latitude': _locationData!.latitude,
+      'longitude': _locationData!.longitude,
+    };
+    // print('Location: ${_locationData!.latitude}, ${_locationData!.longitude}');
+    print(_locationData);
+    return geocodeData; // print the location _locationData!;
   }
 }

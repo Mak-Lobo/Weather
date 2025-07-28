@@ -31,9 +31,14 @@ final GoRouter _router = GoRouter(
   ],
 );
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -41,22 +46,45 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
-        scaffoldBackgroundColor: const Color.fromARGB(255, 28, 41, 59),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.blueGrey[600],
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          backgroundColor: Colors.blueGrey[400],
           foregroundColor: Colors.white,
+          shadowColor: Colors.blue[700],
+          elevation: 20,
+          scrolledUnderElevation: 30,
         ),
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
-        scaffoldBackgroundColor: const Color.fromARGB(255, 28, 41, 59),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.blueGrey[600],
+          shape: const BeveledRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          backgroundColor: Colors.blueGrey[900],
           foregroundColor: Colors.white,
+          shadowColor: Colors.blue[300],
+          elevation: 20,
+          scrolledUnderElevation: 30,
         ),
         brightness: Brightness.dark,
       ),
+      themeMode: ThemeMode.light,
       routerConfig: _router,
     );
   }

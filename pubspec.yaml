@@ -40,9 +40,10 @@ dependencies:
   flutter_riverpod: any
   go_router: ^15.1.2
   flutter_dotenv: ^5.2.1
-  flutter_native_splash: ^2.3.1
+  # flutter_native_splash: ^2.3.1
   location: any
   icons_launcher: ^3.0.1
+  flutter_staggered_animations: any
 
 dev_dependencies:
   flutter_test:
@@ -70,26 +71,6 @@ flutter:
     - .env
     - assets/
 
-# native splash screen
-flutter_native_splash:
-  color: "#87f5fb"
-  image: "assets/weather.png"
-  android: true
-  ios: true
-  web: false
-  android_gravity: center
-
-  color_web: "#87f5fb"
-  color_dark_web: "#1c293b"
-  image_web: "assets/weather.png"
-  image_dark_web: "assets/weather.png"
-  web_image_mode: center
-
-  android_12:
-    image: "assets/weather.png"
-    color: "#87f5fb"
-    color_dark: "#1c293b"
-    icon_background_color: "#6c809a"
 
 # icon launcher
 icons_launcher:
