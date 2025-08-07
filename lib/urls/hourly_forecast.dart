@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import './../urls/base.dart';
 import 'package:dio/dio.dart';
 
@@ -10,7 +12,7 @@ class HourlyForecast {
   );
 
   final base = Base();
-  late List hourlyData;
+  List hourlyData = [];
   late List<dynamic> forecastHourlyList;
   late String baseUrl;
 
@@ -24,13 +26,16 @@ class HourlyForecast {
     try {
       final response = await dio.get(
         '$baseUrl/forecasts/v1/hourly/12hour/222997',
-        queryParameters: {'apikey': base.apiKey, 'metric': 'true'},
+        queryParameters: {
+          'apikey': base.apiKey,
+          'metric': 'true',
+          'details': 'true',
+        },
       );
       // mapping response to map
       if (response.statusCode == 200) {
         forecastHourlyList = List<dynamic>.from(response.data);
       }
-      print(forecastHourlyList);
       return forecastHourlyList;
     } catch (e) {
       print('Error fetching hourly forecast: $e');
@@ -38,34 +43,32 @@ class HourlyForecast {
     }
   }
 
-  Future getHourlyForecastData() async {
+  Future<List<dynamic>> getHourlyForecastData() async {
     try {
       await getHourlyForecast();
     } catch (e) {
       print('Error fetching hourly forecast data: $e');
-      return null;
+      return [];
     }
 
     hourlyData = forecastHourlyList.map((forecast) {
       return {
-        'date': DateTime.fromMillisecondsSinceEpoch(
-          forecast['EpochDateTime'] * 1000,
+        'time': DateFormat('E d, h:mm a').format(
+          DateTime.fromMillisecondsSinceEpoch(forecast['EpochDateTime'] * 1000),
         ),
         'temperature': forecast['Temperature']['Value'],
         'icon': forecast['WeatherIcon'],
+        'iconPhrase': forecast['IconPhrase'],
+        'wind': forecast['Wind']['Speed']['Value'],
+        'direction': forecast['Wind']['Direction']['Localized'],
+        'humidity': forecast['RelativeHumidity'],
+        'uv': forecast['UVIndex'],
       };
     }).toList();
-    // for (var forecast in forecastHourlyList) {
-    //   hourlyData.addAll({
-    //     'date': DateTime.fromMillisecondsSinceEpoch(
-    //       forecast['EpochDateTime'] * 1000,
-    //     ),
-    //     'temperature': forecast['Temperature']['Value'],
-    //     'icon': forecast['WeatherIcon'],
-    //   });
-    // }
 
-    print('\n$hourlyData');
+    for (var data in hourlyData) {
+      print(data);
+    }
     return hourlyData;
   }
 }

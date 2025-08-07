@@ -1,5 +1,6 @@
 import './../urls/base.dart';
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 
 class DailyForecast {
   final dio = Dio(
@@ -10,8 +11,8 @@ class DailyForecast {
   );
 
   final base = Base();
-  late Map<String, dynamic> forecastDailyMap;
-  late Map<String, dynamic> dailyData;
+  Map<String, dynamic>? forecastDailyMap;
+  Map<String, dynamic> dailyData = {};
   late String baseUrl;
 
   DailyForecast() {
@@ -24,7 +25,11 @@ class DailyForecast {
     try {
       final response = await dio.get(
         '$baseUrl/forecasts/v1/daily/5day/222997',
-        queryParameters: {'apikey': base.apiKey, 'metric': 'true'},
+        queryParameters: {
+          'apikey': base.apiKey,
+          'metric': 'true',
+          'details': 'true',
+        },
       );
 
       // mapping response to map
@@ -33,14 +38,14 @@ class DailyForecast {
       }
 
       // presenting hourly forecast data
-      var forecastDate = DateTime.fromMillisecondsSinceEpoch(
-        forecastDailyMap['Headline']['EffectiveEpochDate'] * 1000,
-      );
-      var headlineText = forecastDailyMap['Headline']['Text'];
+      // var forecastDate = DateTime.fromMillisecondsSinceEpoch(
+      //   forecastDailyMap?['Headline']['EffectiveEpochDate'] * 1000,
+      // );
+      // var headlineText = forecastDailyMap?['Headline']['Text'];
+      //
+      // print('Effective Date: $forecastDate. Headline: $headlineText.\n');
 
-      print('Effective Date: $forecastDate. Headlin: $headlineText.\n');
-
-      for (var forecast in forecastDailyMap['DailyForecasts']) {
+      for (var forecast in forecastDailyMap?['DailyForecasts']) {
         var forecastDate = DateTime.fromMillisecondsSinceEpoch(
           forecast['EpochDate'] * 1000,
         );
@@ -48,9 +53,9 @@ class DailyForecast {
 
         var forecastIconPhrase = forecast['Day']['IconPhrase'];
 
-        print('Date: $forecastDate');
-        print('Temperature: $forecastTemp');
-        print('IconPhrase: $forecastIconPhrase\n\n');
+        print(
+          'Date: $forecastDate \t Temperature: $forecastTemp \t IconPhrase: $forecastIconPhrase\n',
+        );
       }
 
       return forecastDailyMap;
@@ -60,19 +65,22 @@ class DailyForecast {
     }
   }
 
-  Future getDailyForecastData() async {
+  Future<Map<String, dynamic>> getDailyForecastData() async {
     try {
       await getDailyForecast();
     } catch (e) {
       print('Error fetching daily forecast data: $e');
-      return null;
+      return {};
     }
 
-    for (var forecast in forecastDailyMap['DailyForecasts']) {
-      dailyData = {
-        'date': DateTime.fromMillisecondsSinceEpoch(
-          forecast['EpochDate'] * 1000,
-        ),
+    for (var forecast in forecastDailyMap?['DailyForecasts']) {
+      DateTime date = DateTime.fromMillisecondsSinceEpoch(
+        forecast['EpochDate'] * 1000,
+      );
+      String dateTimeString = DateFormat.yMMMEd().format(date);
+
+      dailyData[dateTimeString] = {
+        'date': dateTimeString,
         'max_temperature': forecast['Temperature']['Maximum']['Value'],
         'min_temperature': forecast['Temperature']['Minimum']['Value'],
         'dayIconPhrase': forecast['Day']['IconPhrase'],
@@ -81,6 +89,18 @@ class DailyForecast {
         'nightIcon': forecast['Night']['Icon'],
       };
     }
+
+    // dailyData.forEach((date, data) {
+    //   print('Date: $date');
+    //   print('Max Temperature: ${data['max_temperature']}');
+    //   print('Min Temperature: ${data['min_temperature']}');
+    //   print('Day Icon Phrase: ${data['dayIconPhrase']}');
+    //   print('Night Icon Phrase: ${data['nightIconPhrase']}');
+    //   print('Day Icon: ${data['dayIcon']}');
+    //   print('Night Icon: ${data['nightIcon']}');
+    //   print('\n');
+    // });
+    print(dailyData);
     return dailyData;
   }
 }

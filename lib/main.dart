@@ -1,17 +1,28 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart' show dotenv;
-
-import './urls/base.dart';
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import './device_location//location.dart';
+import './urls/base.dart';
+import './urls/current.dart';
+import './urls/daily_forecast.dart';
+import './urls/hourly_forecast.dart';
+import './urls/location.dart';
+
 import './pages/home.dart';
 import './pages/locations.dart';
-import 'package:go_router/go_router.dart';
+
+final getIt = GetIt.instance;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  setupServices(); // Initialize services before setting up functions
   await dotenv.load(fileName: ".env");
-  final base = Base();
+  final base = getIt<Base>();
   await base.baseInit(); // Initialize the base configuration
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 final GoRouter _router = GoRouter(
@@ -24,12 +35,22 @@ final GoRouter _router = GoRouter(
         return const HomePage();
       },
     ),
+
     GoRoute(
-      path: '/locations',
+      path: '/device_location',
       builder: (BuildContext context, GoRouterState state) => const Locations(),
     ),
   ],
 );
+
+void setupServices() {
+  getIt.registerLazySingleton<Base>(() => Base());
+  getIt.registerLazySingleton<LocationUrls>(() => LocationUrls());
+  getIt.registerLazySingleton<CurrentWeather>(() => CurrentWeather());
+  getIt.registerLazySingleton<DailyForecast>(() => DailyForecast());
+  getIt.registerLazySingleton<HourlyForecast>(() => HourlyForecast());
+  getIt.registerLazySingleton<DeviceLocation>(() => DeviceLocation());
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -39,7 +60,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
@@ -84,7 +104,7 @@ class _MyAppState extends State<MyApp> {
         ),
         brightness: Brightness.dark,
       ),
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.dark,
       routerConfig: _router,
     );
   }

@@ -1,345 +1,350 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import '../urls/dailyForecast.dart';
-import './../urls/location.dart';
-import './../locations/location.dart';
-import './../urls/current.dart';
-import './../urls/hourlyForecast.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomePage extends StatefulWidget {
+// import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:weather/custom_widget/custom_container.dart';
+import 'package:weather/services.dart';
+import './../custom_widget/custom_card.dart';
+import './../custom_widget/icons.dart';
+
+GetIt getIt = GetIt.instance;
+
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // final _locationUrlsAsync = ref.watch(locationProvider);
+    final _dailyForecastAsync = ref.watch(dailyForecastDataProvider);
+    // final _deviceLocationAsync = ref.watch(deviceLocationProvider);
+    final _currentWeatherAsync = ref.watch(currentWeatherDataProvider);
+    final _hourlyForecastAsync = ref.watch(hourlyForecastDataProvider);
 
-class _HomePageState extends State<HomePage> {
-  final LocationUrls _locationUrls = LocationUrls();
-  final DailyForecast _forecast = DailyForecast();
-  final DeviceLocation _deviceLocation = DeviceLocation();
-  final CurrentWeather _currentWeather = CurrentWeather();
-  final HourlyForecast _hourlyForecast = HourlyForecast();
+    // // instances
+    // final _locationUrls = getIt<LocationUrls>();
+    // final _dailyForecast = getIt<DailyForecast>();
+    // final _deviceLocation = getIt<DeviceLocation>();
+    // final _currentWeather = getIt<CurrentWeather>();
+    // final _hourlyForecast = getIt<HourlyForecast>();
 
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        // backgroundColor: Colors.amber,
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              floating: true,
-              snap: true,
-              title: const Text('Weather'),
-              centerTitle: true,
-              actions: [
-                IconButton(
-                  onPressed: () => context.push('/locations'),
-                  icon: const Icon(Icons.location_on_sharp),
+    const String degreeSymbol = '\u00B0';
+
+    return _currentWeatherAsync.when(
+      data: (currentWeather) => SafeArea(
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          body: CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.all(8.0),
+                sliver: SliverAppBar(
+                  floating: true,
+                  snap: true,
+                  title: const Text('Weather'),
+                  centerTitle: true,
+                  actions: [
+                    IconButton(
+                      onPressed: () => context.push('/device_location'),
+                      icon: const Icon(Icons.location_on_sharp),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        ref.read(dailyForecastDataProvider.notifier).refresh();
+                        ref.read(currentWeatherDataProvider.notifier).refresh();
+                        ref.read(hourlyForecastDataProvider.notifier).refresh();
+                      },
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ],
+                  leading: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.menu),
+                  ),
                 ),
-              ],
-              leading: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.menu),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  FractionallySizedBox(
-                    widthFactor: 0.975,
-                    child: Card(
-                      color: Theme.of(context).colorScheme.inversePrimary,
-                      borderOnForeground: true,
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+              // main data of interest
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    FractionallySizedBox(
+                      widthFactor: 0.975,
+                      child: CustomCard(
+                        bgColor: Theme.of(context).colorScheme.primaryContainer,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
                             children: [
-                              Column(
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
+                                  Column(
                                     children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Icon(Icons.location_on),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.location_on, size: 25),
+                                              const SizedBox(width: 10),
+                                              Text(
+                                                currentWeather?['location'] ??
+                                                    'N/A',
+                                                // Assuming name is available
+                                                style: TextStyle(fontSize: 25),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                       Text(
-                                        'Washington DC',
-                                        style: TextStyle(fontSize: 18),
+                                        'As of: ${currentWeather?['currentTime'] ?? 'N/A'} ',
                                       ),
                                     ],
                                   ),
-                                  Text('Monday, 18 Dec'),
+                                  Align(
+                                    alignment: Alignment.topRight,
+                                    child: Icon(
+                                      getIcon(
+                                        currentWeather?['weatherIcon'] ?? 'N/A',
+                                      ),
+                                      size: 75.25,
+                                    ),
+                                  ),
+                                  // const Icon(Icons.wb_sunny, size: 50),
+                                  // dynamic icon update function to be placed
                                 ],
                               ),
-                              const Icon(Icons.sunny, size: 50),
+                              const SizedBox(height: 50),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${currentWeather?['temperature'] ?? 'N/A'}$degreeSymbol C',
+                                    style: TextStyle(
+                                      fontSize: 60,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    currentWeather?['weatherText'] ?? 'N/A',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(padding: const EdgeInsets.all(8.0)),
                             ],
                           ),
-                          const SizedBox(height: 50),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '22°',
-                                style: TextStyle(
-                                  fontSize: 60,
-                                  fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 12 Hour Forecast
+              SliverPadding(padding: const EdgeInsets.only(top: 20)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    '12 Hour Forecast',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: FractionallySizedBox(
+                  widthFactor: 0.9,
+                  child: CustomContainer(
+                    child: _hourlyForecastAsync.when(
+                      data: (hourlyForecast) => ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: hourlyForecast.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            width: 100,
+                            margin: const EdgeInsets.all(5),
+                            child: CustomCard(
+                              bgColor: Theme.of(
+                                context,
+                              ).colorScheme.inversePrimary,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(hourlyForecast[index]['time']),
+                                  Icon(
+                                    getIcon(hourlyForecast[index]['icon']),
+                                    size: 30,
+                                  ),
+                                  Text(
+                                    '${hourlyForecast[index]['temperature']}$degreeSymbol C',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      loading: () => Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SpinKitPulse(
+                            color: Theme.of(context).colorScheme.inversePrimary,
+                            size: 56.25,
+                          ),
+                          Text(
+                            'Periodic hourly forecast update...',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      error: (error, stack) =>
+                          Center(child: Text('Error: $error')),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5 Day Forecast
+              SliverPadding(padding: const EdgeInsets.only(top: 20)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    '5-Day Forecast',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+
+              SliverToBoxAdapter(
+                child: FractionallySizedBox(
+                  widthFactor: 0.9,
+                  child: CustomContainer(
+                    child: _dailyForecastAsync.when(
+                      data: (dailyForecast) => ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: dailyForecast.length,
+                        itemBuilder: (context, index) {
+                          final date = dailyForecast.keys.elementAt(index);
+                          final data = dailyForecast[date];
+                          return Container(
+                            margin: const EdgeInsets.all(10),
+                            width: 100,
+                            child: CustomCard(
+                              bgColor: Theme.of(
+                                context,
+                              ).colorScheme.inversePrimary,
+                              child: ListTile(
+                                title: Text(data['date'] ?? 'N/A'),
+                                subtitle: Text(
+                                  'Max: ${data['max_temperature'] ?? 'N/A' ?? 'N/A'}$degreeSymbol C, Min: ${data['min_temperature']}$degreeSymbol C',
+                                ),
+                                leading: SizedBox(
+                                  width: 150,
+                                  child: Column(
+                                    children: [
+                                      Icon(getIcon(data['dayIcon'] ?? 0)),
+                                      Text(
+                                        "Day: ${data['dayIconPhrase'] ?? 'N/A'}",
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                trailing: SizedBox(
+                                  width: 150,
+                                  child: Column(
+                                    children: [
+                                      Icon(getIcon(data['nightIcon'] ?? 0)),
+                                      Text(
+                                        "Night: ${data['nightIconPhrase'] ?? 'N/A'}",
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              Text(
-                                'Sunny',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ],
+                            ),
+                          );
+                        },
+                      ),
+                      error: (error, stack) =>
+                          Center(child: Text('Error: $error')),
+                      loading: () => Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SpinKitPulse(
+                            color: Theme.of(context).colorScheme.inversePrimary,
+                            size: 56.25,
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Row(
-                                children: [
-                                  Column(
-                                    children: const [Text('18°'), Text('min')],
-                                  ),
-                                  Icon(Icons.arrow_upward_sharp),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Column(
-                                    children: const [Text('26°'), Text('max')],
-                                  ),
-                                  Icon(Icons.arrow_downward),
-                                ],
-                              ),
-                            ],
+                          Text(
+                            'Periodic daily forecast update...',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 12),
                           ),
-                          Padding(padding: const EdgeInsets.all(8.0)),
                         ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            // 12 Hour Forecast
-            SliverPadding(padding: const EdgeInsets.only(top: 20)),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  '12 Hour Forecast',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: FractionallySizedBox(
-                widthFactor: 0.9,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  height: 150, // Adjust height as needed
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 12, // For 12 hour forecast
-                    itemBuilder: (context, index) {
-                      return SizedBox(
-                        width: 100, // Adjust width as needed for each item
-                        child: Card(
-                          color: Theme.of(context).colorScheme.onSecondary,
-                          margin: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('${index + 1}:00'), // Example time
-                              Icon(
-                                Icons.wb_cloudy, // Example icon
-                                size: 30,
-                              ),
-                              Text('20°'), // Example temperature
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+              SliverPadding(padding: const EdgeInsets.only(top: 20)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Current Conditions',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-            ),
-
-            // 5 hr forecast
-            SliverPadding(padding: const EdgeInsets.only(top: 20)),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  '5-Day Forecast',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+            ],
+          ),
+        ),
+      ),
+      loading: () => Center(
+        child: SpinKitFoldingCube(
+          size: 75,
+          color: Theme.of(context).colorScheme.inversePrimary,
+        ),
+      ),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'Failed to fetch data.',
+              style: TextStyle(
+                decorationStyle: TextDecorationStyle.solid,
+                fontSize: 20,
               ),
             ),
-            SliverToBoxAdapter(
-              child: FractionallySizedBox(
-                widthFactor: 0.9,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  height: 300,
-                  child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: 5,
-                    itemBuilder: (context, index) {
-                      return SizedBox(
-                        width: 150, // Adjust width as needed for ListTile
-                        child: Card(
-                          color: Theme.of(context).colorScheme.onSecondary,
-                          margin: const EdgeInsets.all(8.0),
-                          child: const ListTile(
-                            leading: Icon(
-                              Icons.sunny,
-                              size: 40,
-                            ), // Adjust size as needed
-                            title: Text('Monday'),
-                            subtitle: Text('22°'),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+            const SizedBox(height: 20),
+            Text(
+              'Error: $error',
+              style: TextStyle(
+                fontSize: 20,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w500,
+                decorationStyle: TextDecorationStyle.dashed,
               ),
+              textAlign: TextAlign.center,
             ),
-
-            // current conditions
-            SliverPadding(padding: const EdgeInsets.only(top: 20)),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Current Conditions',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
+            ElevatedButton(
+              onPressed: () =>
+                  ref.read(dailyForecastDataProvider.notifier).refresh(),
+              child: Text('Retry'),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              sliver: AnimationLimiter(
-                child: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Number of columns
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 1.5, // Adjust aspect ratio as needed
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                      // Example data - replace with actual weather data
-                      final conditions = [
-                        {
-                          'icon': Icons.thermostat,
-                          'label': 'Feels Like',
-                          'value': '25°C',
-                        },
-                        {
-                          'icon': Icons.water_drop,
-                          'label': 'Humidity',
-                          'value': '60%',
-                        },
-                        {
-                          'icon': Icons.air,
-                          'label': 'Wind',
-                          'value': '10 km/h',
-                        },
-                        {
-                          'icon': Icons.visibility,
-                          'label': 'Visibility',
-                          'value': '10 km',
-                        },
-                        {
-                          'icon': Icons.arrow_downward,
-                          'label': 'Pressure',
-                          'value': '1012 hPa',
-                        },
-                        {
-                          'icon': Icons.wb_sunny,
-                          'label': 'UV Index',
-                          'value': 'High',
-                        },
-                      ];
-
-                      return AnimationConfiguration.staggeredGrid(
-                        position: index,
-                        duration: const Duration(milliseconds: 375),
-                        columnCount: 2,
-                        child: ScaleAnimation(
-                          child: FadeInAnimation(
-                            child: Card(
-                              color: Theme.of(context).colorScheme.onSecondary,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      conditions[index]['icon'] as IconData,
-                                      size: 30,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondaryContainer,
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      conditions[index]['label'] as String,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSecondaryContainer,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      conditions[index]['value'] as String,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSecondaryContainer,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: 6, // Number of items in the grid
-                  ),
-                ),
-              ),
-            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

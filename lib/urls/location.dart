@@ -2,7 +2,7 @@ import './../urls/base.dart';
 import 'package:dio/dio.dart';
 
 class LocationUrls {
-  final String locations = 'locations';
+  final String locations = 'device_location';
   final dio = Dio(
     BaseOptions(
       connectTimeout: Duration(milliseconds: 7000),
@@ -21,11 +21,11 @@ class LocationUrls {
     baseUrl = base.apiBaseUrl;
   }
 
-  Future getLocationSearch() async {
+  Future getLocationSearch({String location = 'Thi'}) async {
     try {
       final response = await dio.get(
-        '$baseUrl/$locations/v1/cities/autocomplete/',
-        queryParameters: {'apikey': base.apiKey, 'q': 'Thi'},
+        '$baseUrl/locations/v1/cities/autocomplete/',
+        queryParameters: {'apikey': base.apiKey, 'q': location},
       );
 
       // mapping response to location detail map
@@ -42,7 +42,7 @@ class LocationUrls {
 
       return locationDetailList;
     } catch (e) {
-      print('Error fetching locations: $e');
+      print('Error fetching related cities: $e');
       return null;
     }
   }
