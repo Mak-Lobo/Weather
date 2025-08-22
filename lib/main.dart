@@ -104,7 +104,7 @@ class _MyAppState extends State<MyApp> {
         ),
         brightness: Brightness.dark,
       ),
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
       routerConfig: _router,
     );
   }

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:get_it/get_it.dart';
 
-import '../custom_widget/customLocationCard.dart';
+import '../custom_widget/custom_location_card.dart';
 import '../services.dart';
 
 class Locations extends ConsumerWidget {
@@ -59,16 +58,28 @@ class Locations extends ConsumerWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: _searchResults.when(
                   data: (results) {
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: results!.length,
-                      itemBuilder: (context, index) {
-                        return LocationCard(
-                          bgColor: Theme.of(context).colorScheme.inversePrimary,
-                          locale: results[index]['LocalizedName'],
-                          country: results[index]['Country']['LocalizedName'],
-                        );
-                      },
+                    return ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: 500,
+                        minHeight: 300,
+                        minWidth: 200,
+                        maxWidth: 300,
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: results!.length,
+                        itemBuilder: (context, index) {
+                          return LocationCard(
+                            bgColor: Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer,
+                            locale: results[index]['LocalizedName'],
+                            state:
+                                results[index]['AdministrativeArea']['LocalizedName'],
+                            country: results[index]['Country']['LocalizedName'],
+                          );
+                        },
+                      ),
                     );
                   },
                   error: (error, stackTrace) => Center(
