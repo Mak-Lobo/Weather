@@ -11,7 +11,7 @@ class DailyForecast {
   );
 
   final base = Base();
-  Map<String, dynamic>? forecastDailyMap;
+  Map<String, dynamic> forecastDailyMap = {};
   Map<String, dynamic> dailyData = {};
   late String baseUrl;
 
@@ -45,7 +45,7 @@ class DailyForecast {
       //
       // print('Effective Date: $forecastDate. Headline: $headlineText.\n');
 
-      for (var forecast in forecastDailyMap?['DailyForecasts']) {
+      for (var forecast in forecastDailyMap['DailyForecasts']) {
         var forecastDate = DateTime.fromMillisecondsSinceEpoch(
           forecast['EpochDate'] * 1000,
         );
@@ -73,7 +73,7 @@ class DailyForecast {
       return {};
     }
 
-    for (var forecast in forecastDailyMap?['DailyForecasts']) {
+    for (var forecast in forecastDailyMap['DailyForecasts']) {
       DateTime date = DateTime.fromMillisecondsSinceEpoch(
         forecast['EpochDate'] * 1000,
       );

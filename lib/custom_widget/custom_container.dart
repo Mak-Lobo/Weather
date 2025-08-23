@@ -26,7 +26,7 @@ class CustomContainer extends StatelessWidget {
       ),
       child: Container(
         height: height,
-        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 7.5),
+        padding: EdgeInsets.symmetric(vertical: 2, horizontal: 1.5),
         child: child,
       ),
     );

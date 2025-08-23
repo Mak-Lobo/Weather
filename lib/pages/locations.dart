@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../custom_widget/custom_location_card.dart';
 import '../services.dart';
+import '../database.dart';
 
 class Locations extends ConsumerWidget {
   const Locations({super.key});
@@ -12,6 +13,7 @@ class Locations extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final _searchResults = ref.watch(resultsProvider);
     final TextEditingController controller = TextEditingController();
+    initDatabase();
 
     return SafeArea(
       child: Scaffold(
@@ -26,7 +28,14 @@ class Locations extends ConsumerWidget {
                 centerTitle: true,
                 pinned: true,
                 actions: (controller.text.isNotEmpty)
-                    ? [IconButton(icon: Icon(Icons.search), onPressed: () {})]
+                    ? [
+                        IconButton(
+                          icon: Icon(Icons.cancel_outlined),
+                          onPressed: () {
+                            controller.clear();
+                          },
+                        ),
+                      ]
                     : null,
               ),
             ),
@@ -36,7 +45,7 @@ class Locations extends ConsumerWidget {
                 child: TextField(
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Theme.of(context).colorScheme.inversePrimary,
+                    fillColor: Theme.of(context).colorScheme.onSecondaryFixed,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       borderSide: BorderSide(
@@ -44,8 +53,8 @@ class Locations extends ConsumerWidget {
                         width: 1.5,
                       ),
                     ),
+                    hintText: "Search for any location.",
                   ),
-
                   onChanged: (value) {
                     ref.read(searchProvider.notifier).state = value;
                   },
@@ -55,13 +64,13 @@ class Locations extends ConsumerWidget {
             SliverPadding(padding: const EdgeInsets.all(8.0)),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(top: 2),
                 child: _searchResults.when(
                   data: (results) {
                     return ConstrainedBox(
                       constraints: BoxConstraints(
                         maxHeight: 500,
-                        minHeight: 300,
+                        minHeight: 10,
                         minWidth: 200,
                         maxWidth: 300,
                       ),
@@ -77,6 +86,7 @@ class Locations extends ConsumerWidget {
                             state:
                                 results[index]['AdministrativeArea']['LocalizedName'],
                             country: results[index]['Country']['LocalizedName'],
+                            localKey: results[index]['Key'],
                           );
                         },
                       ),
@@ -100,6 +110,66 @@ class Locations extends ConsumerWidget {
                       ],
                     ),
                   ),
+                ),
+              ),
+            ),
+
+            // list of saved locations
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: FutureBuilder(
+                  future: getDatabaseLocations(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: Column(
+                          children: [
+                            SpinKitFadingCircle(
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 50.0,
+                            ),
+                            Padding(padding: EdgeInsets.only(top: 5)),
+                            Text('Loading locations..'),
+                          ],
+                        ),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Error: ${snapshot.error}',
+                          style: Theme.of(context).textTheme.displayMedium,
+                        ),
+                      );
+                    }
+                    final locations = snapshot.data!;
+                    return ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: 500,
+                        minHeight: 300,
+                        minWidth: 200,
+                        maxWidth: 300,
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: locations.length,
+                        itemBuilder: (context, index) {
+                          return SavedLocation(
+                            bgColor: Theme.of(
+                              context,
+                            ).colorScheme.secondaryContainer,
+                            cityName: locations[index]['cityName'],
+                            adminState: locations[index]['adminState'],
+                            country: locations[index]['country'],
+                            deleteLocation: () {
+                              deleteLocation(locations[index]['locationKey']);
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
               ),
             ),

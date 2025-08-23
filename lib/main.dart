@@ -3,6 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:weather/database.dart';
 
 import './device_location//location.dart';
 import './urls/base.dart';
@@ -22,6 +24,8 @@ void main() async {
   await dotenv.load(fileName: ".env");
   final base = getIt<Base>();
   await base.baseInit(); // Initialize the base configuration
+  final db = await getDatabase();
+  getIt.registerSingleton<Database>(db);
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -104,7 +108,7 @@ class _MyAppState extends State<MyApp> {
         ),
         brightness: Brightness.dark,
       ),
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.dark,
       routerConfig: _router,
     );
   }

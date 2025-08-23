@@ -111,7 +111,7 @@ class HomePage extends ConsumerWidget {
                                     alignment: Alignment.topRight,
                                     child: Icon(
                                       getIcon(
-                                        currentWeather?['weatherIcon'] ?? 'N/A',
+                                        currentWeather?['weatherIcon'] ?? 0,
                                       ),
                                       size: 75.25,
                                     ),
@@ -237,39 +237,43 @@ class HomePage extends ConsumerWidget {
                         itemBuilder: (context, index) {
                           final date = dailyForecast.keys.elementAt(index);
                           final data = dailyForecast[date];
-                          return Container(
-                            margin: const EdgeInsets.all(10),
-                            width: 100,
-                            child: CustomCard(
-                              bgColor: Theme.of(
-                                context,
-                              ).colorScheme.inversePrimary,
-                              child: ListTile(
-                                title: Text(data['date'] ?? 'N/A'),
-                                subtitle: Text(
-                                  'Max: ${data['max_temperature'] ?? 'N/A' ?? 'N/A'}$degreeSymbol C, Min: ${data['min_temperature']}$degreeSymbol C',
+                          return CustomCard(
+                            bgColor: Theme.of(
+                              context,
+                            ).colorScheme.inversePrimary,
+                            child: ListTile(
+                              title: Text(data['date'] ?? 'N/A'),
+                              subtitle: Text(
+                                'Max: ${data['max_temperature'] ?? 'N/A' ?? 'N/A'}$degreeSymbol C, Min: ${data['min_temperature']}$degreeSymbol C',
+                              ),
+                              leading: SizedBox(
+                                width: 100,
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      getIcon(data['dayIcon'] ?? 0),
+                                      size: 30,
+                                    ),
+                                    Text(
+                                      "Day: ${data['dayIconPhrase'] ?? 'N/A'}",
+                                      style: TextStyle(fontSize: 10),
+                                    ),
+                                  ],
                                 ),
-                                leading: SizedBox(
-                                  width: 150,
-                                  child: Column(
-                                    children: [
-                                      Icon(getIcon(data['dayIcon'] ?? 0)),
-                                      Text(
-                                        "Day: ${data['dayIconPhrase'] ?? 'N/A'}",
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                trailing: SizedBox(
-                                  width: 150,
-                                  child: Column(
-                                    children: [
-                                      Icon(getIcon(data['nightIcon'] ?? 0)),
-                                      Text(
-                                        "Night: ${data['nightIconPhrase'] ?? 'N/A'}",
-                                      ),
-                                    ],
-                                  ),
+                              ),
+                              trailing: SizedBox(
+                                width: 100,
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      getIcon(data['nightIcon'] ?? 0),
+                                      size: 30,
+                                    ),
+                                    Text(
+                                      "Night: ${data['nightIconPhrase'] ?? 'N/A'}",
+                                      style: TextStyle(fontSize: 10),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
