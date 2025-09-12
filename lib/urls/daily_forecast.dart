@@ -37,14 +37,6 @@ class DailyForecast {
         forecastDailyMap = Map<String, dynamic>.from(response.data);
       }
 
-      // presenting hourly forecast data
-      // var forecastDate = DateTime.fromMillisecondsSinceEpoch(
-      //   forecastDailyMap?['Headline']['EffectiveEpochDate'] * 1000,
-      // );
-      // var headlineText = forecastDailyMap?['Headline']['Text'];
-      //
-      // print('Effective Date: $forecastDate. Headline: $headlineText.\n');
-
       for (var forecast in forecastDailyMap['DailyForecasts']) {
         var forecastDate = DateTime.fromMillisecondsSinceEpoch(
           forecast['EpochDate'] * 1000,

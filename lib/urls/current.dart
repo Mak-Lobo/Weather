@@ -91,4 +91,8 @@ class CurrentWeather {
       return null;
     }
   }
+
+  // Future<Map<String, dynamic>> getSavedLocationWeather(
+  //   String locationKey,
+  // ) async {}
 }

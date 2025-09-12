@@ -29,11 +29,8 @@ class LocationCard extends StatelessWidget {
           Icons.location_on,
           color: Theme.of(context).colorScheme.onPrimaryContainer,
         ),
-        title: Text(locale, style: Theme.of(context).textTheme.displaySmall),
-        subtitle: Text(
-          "$state, $country",
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
+        title: Text(locale),
+        subtitle: Text("$state, $country"),
         onTap: () {
           showDialog(
             context: context,
