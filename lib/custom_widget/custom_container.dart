@@ -10,14 +10,15 @@ class CustomContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: RadialGradient(
           colors: [
             Theme.of(context).colorScheme.primary,
             Theme.of(context).colorScheme.inversePrimary,
             Theme.of(context).colorScheme.secondary,
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          center: Alignment.center,
+          radius: 1.5,
+          stops: [0.3, 0.7, 0.9],
         ),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(

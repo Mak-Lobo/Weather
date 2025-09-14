@@ -9,7 +9,7 @@ class CustomCard extends StatelessWidget {
     required this.bgColor,
     required this.child,
     this.isBorderShown = true,
-    this.shadow = Colors.transparent,
+    this.shadow = Colors.black12,
     super.key,
   });
 
@@ -17,7 +17,7 @@ class CustomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: bgColor,
-      elevation: 20,
+      elevation: 10,
       shape: RoundedRectangleBorder(
         side: BorderSide(
           strokeAlign: BorderSide.strokeAlignOutside,
@@ -25,7 +25,7 @@ class CustomCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(15),
       ),
-      shadowColor: shadow.withValues(alpha: 20, blue: 15),
+      shadowColor: shadow.withValues(alpha: 0.3, blue: 2),
       borderOnForeground: isBorderShown,
       child: child,
     );

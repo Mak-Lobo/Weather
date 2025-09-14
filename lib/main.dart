@@ -24,8 +24,8 @@ void main() async {
   await dotenv.load(fileName: ".env");
   final base = getIt<Base>();
   await base.baseInit(); // Initialize the base configuration
-  final db = await getDatabase();
-  getIt.registerSingleton<Database>(db);
+  getIt.registerSingleton<Database>(await getDatabase());
+  await initDatabase();
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> {
         ),
         brightness: Brightness.dark,
       ),
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
       routerConfig: _router,
     );
   }

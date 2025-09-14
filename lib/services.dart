@@ -7,6 +7,7 @@ import './urls/daily_forecast.dart';
 import './urls/hourly_forecast.dart';
 import './urls/location.dart';
 import './device_location/location.dart';
+import 'database.dart';
 
 final getIt = GetIt.instance;
 
@@ -45,6 +46,36 @@ final dailyForecastDataProvider =
       ),
     );
 
+final savedLocationsWeatherProvider =
+    StateNotifierProvider<
+      PeriodicNotifier<List<Map<String, dynamic>>>,
+      AsyncValue<List<Map<String, dynamic>>>
+    >(
+      (ref) => PeriodicNotifier(() async {
+        final currentWeather = getIt<CurrentWeather>();
+        try {
+          // Fetch saved locations from database
+          final locations = await getDatabaseLocations();
+
+          // Fetch weather data for each location
+          final weatherFutures = locations.map((location) async {
+            final weather = await currentWeather.getSavedLocationWeather(
+              location['locationKey'],
+            );
+            return {
+              'location': '${location['cityName']}, ${location['country']}',
+              ...weather,
+            };
+          }).toList();
+
+          return await Future.wait(weatherFutures);
+        } catch (e) {
+          print('Error fetching saved locations weather: $e');
+          return [];
+        }
+      }, interval: const Duration(minutes: 15)),
+    );
+
 // final locationProvider = StateNotifierProvider(
 //   (ref) => PeriodicNotifier(() => getIt<LocationUrls>().getLocationSearch()),
 // );
@@ -77,6 +108,10 @@ final deviceLocationProvider =
     );
 
 // current weather provider generic class
+/* the below class has the following attributes
+_timer: a timer object that is used to periodically fetch data
+fetcher: a function that fetches data and returns a Future<T>
+ */
 class PeriodicNotifier<T> extends StateNotifier<AsyncValue<T>> {
   Timer? _timer;
   final Future<T> Function() fetcher;
@@ -85,6 +120,7 @@ class PeriodicNotifier<T> extends StateNotifier<AsyncValue<T>> {
     this.fetcher, {
     Duration interval = const Duration(minutes: 5),
   }) : super(const AsyncValue.loading()) {
+    // upon initialization, fetch data and start periodic fetching
     _fetchData();
     _startPeriodicFetch(interval);
   }

@@ -20,23 +20,22 @@ class Locations extends ConsumerWidget {
         body: CustomScrollView(
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
               sliver: SliverAppBar(
                 floating: true,
                 snap: true,
                 title: const Text('Locations'),
                 centerTitle: true,
                 pinned: true,
-                actions: (controller.text.isNotEmpty)
-                    ? [
-                        IconButton(
-                          icon: Icon(Icons.cancel_outlined),
-                          onPressed: () {
-                            controller.clear();
-                          },
-                        ),
-                      ]
-                    : null,
+                actions: [
+                  IconButton(
+                    onPressed: () {
+                      controller.clear();
+                      ref.read(searchProvider.notifier).state = '';
+                    },
+                    icon: Icon(Icons.clear),
+                  ),
+                ],
               ),
             ),
             SliverToBoxAdapter(
@@ -45,13 +44,16 @@ class Locations extends ConsumerWidget {
                 child: TextField(
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Theme.of(context).colorScheme.onSecondaryFixed,
+                    fillColor: Theme.of(context).colorScheme.secondaryFixedDim,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       borderSide: BorderSide(
                         color: Theme.of(context).colorScheme.primary,
                         width: 1.5,
                       ),
+                    ),
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSecondaryFixed,
                     ),
                     hintText: "Search for any location.",
                   ),
@@ -61,7 +63,7 @@ class Locations extends ConsumerWidget {
                 ),
               ),
             ),
-            SliverPadding(padding: const EdgeInsets.all(8.0)),
+            SliverPadding(padding: const EdgeInsets.all(5.0)),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(top: 2),

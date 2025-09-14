@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 class DailyForecast {
   final dio = Dio(
     BaseOptions(
-      connectTimeout: Duration(milliseconds: 3000),
-      receiveTimeout: Duration(milliseconds: 3000),
+      connectTimeout: Duration(milliseconds: 7000),
+      receiveTimeout: Duration(milliseconds: 7000),
     ),
   );
 

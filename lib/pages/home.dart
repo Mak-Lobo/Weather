@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 // import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:weather/custom_widget/custom_container.dart';
 import 'package:weather/services.dart';
+import '../custom_widget/saved_locations.dart';
 import './../custom_widget/custom_card.dart';
 import './../custom_widget/icons.dart';
 
@@ -22,6 +25,9 @@ class HomePage extends ConsumerWidget {
     // final _deviceLocationAsync = ref.watch(deviceLocationProvider);
     final _currentWeatherAsync = ref.watch(currentWeatherDataProvider);
     final _hourlyForecastAsync = ref.watch(hourlyForecastDataProvider);
+    final _savedLocationsWeatherAsync = ref.watch(
+      savedLocationsWeatherProvider,
+    );
 
     // // instances
     // final _locationUrls = getIt<LocationUrls>();
@@ -55,6 +61,9 @@ class HomePage extends ConsumerWidget {
                         ref.read(dailyForecastDataProvider.notifier).refresh();
                         ref.read(currentWeatherDataProvider.notifier).refresh();
                         ref.read(hourlyForecastDataProvider.notifier).refresh();
+                        ref
+                            .read(savedLocationsWeatherProvider.notifier)
+                            .refresh();
                       },
                       icon: const Icon(Icons.refresh),
                     ),
@@ -149,6 +158,24 @@ class HomePage extends ConsumerWidget {
                   ],
                 ),
               ),
+              // saved locations data
+              SliverPadding(padding: const EdgeInsets.only(top: 20)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Saved Locations Weather data',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: FractionallySizedBox(
+                  widthFactor: 0.9,
+                  child: CustomContainer(child: const WeatherCarousel()),
+                ),
+              ),
+
               // 12 Hour Forecast
               SliverPadding(padding: const EdgeInsets.only(top: 20)),
               SliverToBoxAdapter(
@@ -237,43 +264,48 @@ class HomePage extends ConsumerWidget {
                         itemBuilder: (context, index) {
                           final date = dailyForecast.keys.elementAt(index);
                           final data = dailyForecast[date];
-                          return CustomCard(
-                            bgColor: Theme.of(
-                              context,
-                            ).colorScheme.inversePrimary,
-                            child: ListTile(
-                              title: Text(data['date'] ?? 'N/A'),
-                              subtitle: Text(
-                                'Max: ${data['max_temperature'] ?? 'N/A' ?? 'N/A'}$degreeSymbol C, Min: ${data['min_temperature']}$degreeSymbol C',
-                              ),
-                              leading: SizedBox(
-                                width: 100,
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      getIcon(data['dayIcon'] ?? 0),
-                                      size: 30,
-                                    ),
-                                    Text(
-                                      "Day: ${data['dayIconPhrase'] ?? 'N/A'}",
-                                      style: TextStyle(fontSize: 10),
-                                    ),
-                                  ],
+                          return Container(
+                            margin: const EdgeInsets.all(5),
+                            child: CustomCard(
+                              bgColor: Theme.of(
+                                context,
+                              ).colorScheme.inversePrimary,
+                              child: ListTile(
+                                title: Text(data['date'] ?? 'N/A'),
+                                subtitle: Text(
+                                  'Max: ${data['max_temperature'] ?? 'N/A' ?? 'N/A'}$degreeSymbol C, Min: ${data['min_temperature']}$degreeSymbol C',
                                 ),
-                              ),
-                              trailing: SizedBox(
-                                width: 100,
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      getIcon(data['nightIcon'] ?? 0),
-                                      size: 30,
-                                    ),
-                                    Text(
-                                      "Night: ${data['nightIconPhrase'] ?? 'N/A'}",
-                                      style: TextStyle(fontSize: 10),
-                                    ),
-                                  ],
+                                leading: SizedBox(
+                                  width: 100,
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        getIcon(data['dayIcon'] ?? 0),
+                                        size: 30,
+                                      ),
+                                      Text(
+                                        "Day: ${data['dayIconPhrase'] ?? 'N/A'}",
+                                        style: TextStyle(fontSize: 10),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                trailing: SizedBox(
+                                  width: 100,
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        getIcon(data['nightIcon'] ?? 0),
+                                        size: 30,
+                                      ),
+                                      Text(
+                                        "Night: ${data['nightIconPhrase'] ?? 'N/A'}",
+                                        style: TextStyle(fontSize: 10),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -307,6 +339,60 @@ class HomePage extends ConsumerWidget {
                   child: Text(
                     'Current Conditions',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 10),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final conditions = {
+                        'Feels Like':
+                            '${currentWeather?['feelsLike'] ?? 'N/A'}°C',
+                        'Humidity': '${currentWeather?['humidity'] ?? 'N/A'}%',
+                        'Wind': '${currentWeather?['wind'] ?? 'N/A'} km/h',
+                        'Pressure':
+                            '${currentWeather?['pressure'] ?? 'N/A'} hPa',
+                      };
+                      final weatherIcons = [
+                        Icons.thermostat,
+                        Icons.water_drop,
+                        MdiIcons.weatherWindy,
+                        Symbols.compress,
+                      ];
+                      final key = conditions.keys.elementAt(index);
+                      final value = conditions[key]!;
+                      return CustomCard(
+                        bgColor: Theme.of(context).colorScheme.inversePrimary,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              weatherIcons[index],
+                              color: Theme.of(context).colorScheme.onSurface,
+                              size: 40,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              key,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(value, style: TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      );
+                    },
+                    childCount: 4, // Fixed to 5 conditions
+                  ),
+                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 400.0,
+                    mainAxisSpacing: 5.0,
+                    crossAxisSpacing: 10.0,
+                    childAspectRatio: 2 / 3,
                   ),
                 ),
               ),

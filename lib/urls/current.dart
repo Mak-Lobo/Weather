@@ -20,7 +20,11 @@ class CurrentWeather {
   final _deviceLocation = getIt<DeviceLocation>();
   String? locationKey, locationName;
   Map<String, dynamic>? geocodeData;
-  late Map<String, dynamic> currentWeatherMap, currentWeatherData, tempData;
+  late Map<String, dynamic> currentWeatherMap,
+      currentWeatherData,
+      tempData,
+      savedLocationWeatherMap,
+      savedLocationWeatherData;
 
   CurrentWeather() {
     base.baseInit();
@@ -92,7 +96,39 @@ class CurrentWeather {
     }
   }
 
-  // Future<Map<String, dynamic>> getSavedLocationWeather(
-  //   String locationKey,
-  // ) async {}
+  Future<Map<String, dynamic>> getSavedLocationWeather(
+    String locationKey,
+  ) async {
+    try {
+      final response = await dio.get(
+        '$_baseUrl/currentconditions/v1/$locationKey',
+        queryParameters: {'apikey': base.apiKey, 'details': 'true'},
+      );
+      if (response.statusCode == 200) {
+        List savedLocationWeatherList = List<dynamic>.from(response.data);
+        savedLocationWeatherMap = Map<String, dynamic>.from(
+          savedLocationWeatherList[0],
+        );
+        // print(savedLocationWeatherMap);
+      }
+      // formatting local observable time
+      DateTime currentTime = DateTime.parse(
+        savedLocationWeatherMap['LocalObservationDateTime'],
+      );
+      String formattedTime = DateFormat.yMMMEd().add_jmz().format(currentTime);
+      savedLocationWeatherData = {
+        'currentTime': formattedTime,
+        'weatherText': savedLocationWeatherMap['WeatherText'],
+        'weatherIcon': savedLocationWeatherMap['WeatherIcon'],
+        'temperature':
+            savedLocationWeatherMap['Temperature']['Metric']['Value'],
+        'feelsLike':
+            savedLocationWeatherMap['RealFeelTemperature']['Metric']['Value'],
+      };
+      return savedLocationWeatherData;
+    } catch (e) {
+      print('Error fetching saved location weather: $e');
+      return {};
+    }
+  }
 }

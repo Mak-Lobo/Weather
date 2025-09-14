@@ -59,7 +59,8 @@ class LocationCard extends StatelessWidget {
         ElevatedButton(
           onPressed: context.pop,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
           ),
           child: Text('Cancel'),
         ),
@@ -84,9 +85,14 @@ class LocationCard extends StatelessWidget {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           ),
-          child: Text('Save'),
+          child: Text(
+            'Save',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
         ),
       ],
     );
@@ -117,7 +123,10 @@ class SavedLocation extends StatelessWidget {
         leading: Icon(Icons.location_on),
         title: Text(cityName),
         subtitle: Text('$adminState, $country'),
-        onLongPress: deleteLocation,
+        trailing: IconButton(
+          onPressed: deleteLocation,
+          icon: Icon(Icons.delete_forever_outlined),
+        ),
       ),
     );
   }
