@@ -53,7 +53,9 @@ class Locations extends ConsumerWidget {
                       ),
                     ),
                     hintStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.onSecondaryFixed,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSecondaryFixedVariant,
                     ),
                     hintText: "Search for any location.",
                   ),
